@@ -129,7 +129,7 @@ export function DecimalToFraction(numberString: string) {
     } else {
         let number = parseFloat(numberString).toPrecision(DECIMAL_PRECISION);
         let intPart = Math.floor(parseInt(number));
-        let fracPart: number = parseInt(number) - intPart;
+        let fracPart: number = parseFloat(number) - intPart;
         let precisionVal = 1000000000;
         let gcdVal = gcd(Math.round(fracPart * precisionVal), precisionVal);
         let numerator = Math.round(fracPart * precisionVal) / gcdVal;
