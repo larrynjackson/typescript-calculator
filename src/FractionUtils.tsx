@@ -16,7 +16,7 @@ export class Fraction {
         }
         this.numerator = numerator;
         this.denominator = denominator;
-        if(Number.isNaN(this.numerator) || Number.isNaN(this.denominator)) {
+        if (Number.isNaN(this.numerator) || Number.isNaN(this.denominator)) {
             this.isvalid = false;
         } else {
             this.isvalid = true;
@@ -50,7 +50,6 @@ export class Fraction {
     }
 
     invert() {
-
         let tmp = this.numerator;
         if (this.numerator < 0) {
             this.numerator = -this.denominator;
@@ -63,12 +62,9 @@ export class Fraction {
     }
 
     addFractions(fracString: string) {
-
         let b = new Fraction(fracString);
-
         this.simplify();
         b.simplify();
-
         let gcdVal = gcd(this.denominator, b.denominator);
         if (gcdVal === 1) {
             this.numerator = this.numerator * b.denominator + this.denominator * b.numerator;
@@ -76,7 +72,6 @@ export class Fraction {
         }
         else {
             let tmp = this.numerator * (b.denominator / gcdVal) + b.numerator * (this.denominator / gcdVal);
-
             let gcdValTwo = gcd(tmp, gcdVal);
             this.numerator = tmp / gcdValTwo;
             this.denominator = (this.denominator / gcdVal) * (b.denominator / gcdValTwo);
@@ -86,17 +81,14 @@ export class Fraction {
 
     subtractFractions(fracString: string) {
         let b = new Fraction(fracString);
-
         b.numerator = -b.numerator;
         this.addFractions(b.get());
     }
 
     multiplyFractions(fracString: string) {
         let b = new Fraction(fracString);
-
         this.simplify();
         b.simplify();
-
         this.numerator = this.numerator * b.numerator;
         this.denominator = this.denominator * b.denominator;
         this.simplify();
@@ -104,7 +96,6 @@ export class Fraction {
 
     divideFractions(fracString: string) {
         let b = new Fraction(fracString);
-
         b.invert();
         this.multiplyFractions(b.get());
     }
@@ -168,7 +159,7 @@ function gcd(a: number, b: number): number {
 function myConversion(numberString: string) {
     let parts: string[] = numberString.split(".");
     let intPart: string = parts[0];
-    if(intPart === '1' && parts[1] === undefined) {
+    if (intPart === '1' && parts[1] === undefined) {
         return "1|1";
     }
     if (parts[1] === undefined) {
@@ -190,7 +181,7 @@ function myConversion(numberString: string) {
         pat3 = parseInt(parts[1].substr(0, 3));
         pat4 = parseInt(parts[1].substr(0, 4));
         let pat5: number = pat4;
-        if(pat1 >= 5) {
+        if (pat1 >= 5) {
             pat5 = pat4 + 1;
         }
         // repeating single digit pattern. ex: 0.333333333

@@ -9,9 +9,9 @@ type InputButtonProps = {
 }
 
 
-export default function InputButton( props: InputButtonProps ) {
+export default function InputButton(props: InputButtonProps) {
     return (
-        <button id={props.id} onClick={() => props.dispatch({payload: {type: ACTIONS.KEYPAD, input: props.input}})}>
+        <button id={props.id} onClick={() => props.dispatch({ payload: { type: ACTIONS.KEYPAD, input: props.input } })}>
             {props.input}
         </button >
     )

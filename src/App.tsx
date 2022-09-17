@@ -1,16 +1,9 @@
 
 
-
 import { useEffect, useReducer } from 'react';
 import InputButton from './InputButton';
 import { DecimalToFraction, Fraction } from './FractionUtils';
-
-
-
 import './styles.css';
-import { CombinedCodeActions } from 'typescript';
-import { KeyType } from 'crypto';
-import { EventType } from '@testing-library/react';
 
 export const ACTIONS = {
   MODE: 'mode',
@@ -62,23 +55,22 @@ type CalculatorAction = {
 }
 
 type HistoryStackType = {
-  currentOperand: string | null, 
-  previousOperand: string | null, 
-  operation: string | null, 
-  inputState: string | null, 
+  currentOperand: string | null,
+  previousOperand: string | null,
+  operation: string | null,
+  inputState: string | null,
   mode: string | null,
-  overwrite: boolean | null, 
+  overwrite: boolean | null,
 }
 
 type CalculatorState = {
-  
-    inputState: string | null,
-    currentOperand: string | null,
-    previousOperand: string | null,
-    operation: string | null,
-    mode: string | null,
-    overwrite: boolean | null,
-    history: HistoryStackType[],
+  inputState: string | null,
+  currentOperand: string | null,
+  previousOperand: string | null,
+  operation: string | null,
+  mode: string | null,
+  overwrite: boolean | null,
+  history: HistoryStackType[],
 }
 
 function reducer(state: CalculatorState, payload: CalculatorAction) {
@@ -98,44 +90,19 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
             state.inputState = ACTIONS.PERIOD;
             state.currentOperand = `${state.currentOperand || ""}${payload.payload.input}`;
           } else if (payload.payload.input === '-' || payload.payload.input === '+' || payload.payload.input === '*' || payload.payload.input === '/') {
-            SaveHistory(state);
-            if (state.previousOperand == null) {
-              state.operation = payload.payload.input;
-              state.previousOperand = state.currentOperand;
-              state.inputState = ACTIONS.START;
-              state.currentOperand = null;
-              payload.payload.input = null;
-            } else {
-              state.previousOperand = evaluate(state);
-              state.operation = payload.payload.input;
-              state.currentOperand = null;
-              state.inputState = ACTIONS.START;
-              payload.payload.input = null;
-            }
+            state = ActionOperator(state, payload, 'decimal');
           }
           return {
             ...state
           }
         case ACTIONS.NEGATE:
-          if (!isNaN(parseInt(payload.payload.input!))) {
-            SaveHistory(state);
-            state.inputState = ACTIONS.DIGIT;
-            return {
-              ...state,
-              currentOperand: `${state.currentOperand || ""}${payload.payload.input}`,
-            }
-          }
+          state = ActionNegatePipePeriod(state, payload, ACTIONS.DIGIT);
           return {
             ...state,
           }
         case ACTIONS.FRACTION_NEGATE:
           if (!isNaN(parseInt(payload.payload.input!))) {
-            SaveHistory(state);
-            state.inputState = ACTIONS.FRACTION_NUMERATOR;
-            return {
-              ...state,
-              currentOperand: `${state.currentOperand || ""}${payload.payload.input}`,
-            }
+            state = ActionNegatePipePeriod(state, payload, ACTIONS.FRACTION_NUMERATOR);
           }
           return {
             ...state,
@@ -151,33 +118,13 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
               currentOperand: `${state.currentOperand || ""}${payload.payload.input}`,
             }
           } else if (payload.payload.input === '-' || payload.payload.input === '+' || payload.payload.input === '*' || payload.payload.input === '/') {
-            SaveHistory(state);
-            if (state.previousOperand == null) {
-              state.operation = payload.payload.input;
-              state.previousOperand = state.currentOperand;
-              state.inputState = ACTIONS.START;
-              state.currentOperand = null;
-              payload.payload.input = null;
-            } else {
-              state.previousOperand = evaluateFractions(state);
-              state.operation = payload.payload.input;
-              state.currentOperand = null;
-              state.inputState = ACTIONS.START;
-              payload.payload.input = null;
-            }
+            state = ActionOperator(state, payload, 'fraction');
           }
           return {
             ...state,
           }
         case ACTIONS.PIPE:
-          if (!isNaN(parseInt(payload.payload.input!))) {
-            SaveHistory(state);
-            state.inputState = ACTIONS.FRACTION_DENOMINATOR;
-            return {
-              ...state,
-              currentOperand: `${state.currentOperand || ""}${payload.payload.input}`,
-            }
-          }
+          state = ActionNegatePipePeriod(state, payload, ACTIONS.FRACTION_DENOMINATOR);
           return {
             ...state,
           }
@@ -187,33 +134,13 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
             state.inputState = ACTIONS.FRACTION_DENOMINATOR;
             state.currentOperand = `${state.currentOperand || ""}${payload.payload.input}`;
           } else if (payload.payload.input === '-' || payload.payload.input === '+' || payload.payload.input === '*' || payload.payload.input === '/') {
-            SaveHistory(state);
-            if (state.previousOperand == null) {
-              state.operation = payload.payload.input;
-              state.previousOperand = state.currentOperand;
-              state.inputState = ACTIONS.START;
-              state.currentOperand = null;
-              payload.payload.input = null;
-            } else {
-              state.previousOperand = evaluateFractions(state);
-              state.operation = payload.payload.input;
-              state.currentOperand = null;
-              state.inputState = ACTIONS.START;
-              payload.payload.input = null;
-            }
+            state = ActionOperator(state, payload, 'fraction');
           }
           return {
             ...state
           }
         case ACTIONS.PERIOD:
-          if (!isNaN(parseInt(payload.payload.input!))) {
-            SaveHistory(state);
-            state.inputState = ACTIONS.PERIOD_DIGITS;
-            return {
-              ...state,
-              currentOperand: `${state.currentOperand || ""}${payload.payload.input}`,
-            }
-          }
+          state = ActionNegatePipePeriod(state, payload, ACTIONS.PERIOD_DIGITS);
           return {
             ...state,
           }
@@ -222,18 +149,7 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
             SaveHistory(state);
             state.currentOperand = `${state.currentOperand || ""}${payload.payload.input}`;
           } else if (payload.payload.input === '-' || payload.payload.input === '+' || payload.payload.input === '*' || payload.payload.input === '/') {
-            SaveHistory(state);
-            if (state.previousOperand == null) {
-              state.operation = payload.payload.input;
-              state.previousOperand = state.currentOperand;
-              state.inputState = ACTIONS.START;
-              state.currentOperand = null;
-            } else {
-              state.previousOperand = evaluate(state);
-              state.operation = payload.payload.input;
-              state.currentOperand = null;
-              state.inputState = ACTIONS.START;
-            }
+            state = ActionOperator(state, payload, 'decimal');
           }
           return {
             ...state,
@@ -257,7 +173,7 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
       if (state.previousOperand == null && state.currentOperand == null) {
         if (state.mode === '(D)') {
           state.mode = '(F)';
-        } else if(state.mode === '(F)') {
+        } else if (state.mode === '(F)') {
           state.mode = '(D)';
         }
       } else if (state.previousOperand == null && state.currentOperand != null) {
@@ -284,19 +200,13 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
       }
     case ACTIONS.DELETE_LAST:
       if (state.history.length > 0) {
-        //{state.currentOperand, state.previousOperand, state.operation, state.inputState, state.overwrite, state.mode} = state.history.pop();
         let hst = state.history.pop();
-        
         state.currentOperand = hst!.currentOperand;
         state.previousOperand = hst!.previousOperand;
         state.operation = hst!.operation;
         state.inputState = hst!.inputState;
         state.mode = hst!.mode;
         state.overwrite = hst!.overwrite;
-      
-
-
-        //[state.currentOperand, state.previousOperand, state.operation, state.inputState, state.overwrite, state.mode] = state.history.pop();
       }
       return {
         ...state,
@@ -311,32 +221,23 @@ function reducer(state: CalculatorState, payload: CalculatorAction) {
       }
       SaveHistory(state);
       if (state.mode === '(D)') {
-        return {
-          ...state,
-          overwrite: true,
-          previousOperand: null,
-          operation: null,
-          inputState: ACTIONS.START,
-          currentOperand: evaluate(state),
-        }
+        state.currentOperand = evaluate(state);
       } else {
-        return {
-          ...state,
-          overwrite: true,
-          previousOperand: null,
-          operation: null,
-          inputState: ACTIONS.START,
-          currentOperand: evaluateFractions(state),
-        }
+        state.currentOperand = evaluateFractions(state);
       }
-
+      return {
+        ...state,
+        overwrite: true,
+        previousOperand: null,
+        operation: null,
+        inputState: ACTIONS.START,
+      }
     default:
       return state;
   }
 }
 
 function evaluateFractions(state: CalculatorState) {
-
   let fractionCurrent = new Fraction(state.currentOperand!);
   let fractionPrevious = new Fraction(state.previousOperand!);
   if (!fractionCurrent.getIsValid() || !fractionPrevious.getIsValid()) {
@@ -389,8 +290,7 @@ function evaluate(state: CalculatorState) {
 
 }
 
-//function RemoveTrailingZeros(compStr) {
-  const RemoveTrailingZeros = (compStr: string) => {
+function RemoveTrailingZeros(compStr: string) {
   if (compStr.includes('.') && !(compStr.includes('e') || compStr.includes('E'))) {
     let idx = compStr.length;
     while (compStr.charAt(idx - 1) === '0') {
@@ -403,6 +303,44 @@ function evaluate(state: CalculatorState) {
     return compStr;
   }
   return compStr;
+}
+
+function ActionNegatePipePeriod(state: CalculatorState, payload: CalculatorAction, action: string) {
+  if (!isNaN(parseInt(payload.payload.input!))) {
+    SaveHistory(state);
+    state.inputState = action;
+    return {
+      ...state,
+      currentOperand: `${state.currentOperand || ""}${payload.payload.input}`,
+    }
+  }
+  return {
+    ...state,
+  }
+}
+
+function ActionOperator(state: CalculatorState, payload: CalculatorAction, evalType: string) {
+  SaveHistory(state);
+  if (state.previousOperand == null) {
+    state.operation = payload.payload.input;
+    state.previousOperand = state.currentOperand;
+    state.inputState = ACTIONS.START;
+    state.currentOperand = null;
+    payload.payload.input = null;
+  } else {
+    if (evalType === 'decimal') {
+      state.previousOperand = evaluate(state);
+    } else if (evalType === 'fraction') {
+      state.previousOperand = evaluateFractions(state);
+    }
+    state.operation = payload.payload.input;
+    state.currentOperand = null;
+    state.inputState = ACTIONS.START;
+    payload.payload.input = null;
+  }
+  return {
+    ...state
+  }
 }
 
 function ActionsStart(state: CalculatorState, payload: CalculatorAction) {
@@ -422,7 +360,7 @@ function ActionsStart(state: CalculatorState, payload: CalculatorAction) {
       }
     }
   }
-  if (!isNaN(parseInt(payload.payload.input!))) {
+  if (!isNaN(parseInt(payload.payload.input!)) || payload.payload.input === '-') {
     SaveHistory(state);
     // have done evaluate that sets overwrite and clears previous and operation.
     // now we see a digit so clear the current and turn off overwrite.
@@ -445,6 +383,7 @@ function ActionsStart(state: CalculatorState, payload: CalculatorAction) {
       }
     }
     state.currentOperand = `${state.currentOperand || ""}${payload.payload.input}`;
+    console.log("CO:" + state.currentOperand);
   }
   return {
     ...state,
@@ -461,7 +400,6 @@ function SaveHistory(state: CalculatorState) {
     overwrite: state.overwrite,
   }
   state.history.push(hst);
-  //state.history.push([state.currentOperand, state.previousOperand, state.operation, state.inputState, state.overwrite, state.mode]);
 }
 
 
@@ -469,6 +407,7 @@ function App() {
 
   useEffect(() => {
     const detectKeyDown = (e: any) => {
+      console.log("key:" + e.key);
       switch (e.key) {
         case "0":
           ButtonClick(KEYS.BTN0);
@@ -565,33 +504,33 @@ function App() {
 
   const { currentOperand, previousOperand, operation, mode } = state;
 
-const btnMOD: CalculatorAction = {
-  payload: {
-    type: ACTIONS.MODE,
-    input: null,
+  const btnMOD: CalculatorAction = {
+    payload: {
+      type: ACTIONS.MODE,
+      input: null,
+    }
   }
-}
 
-const btnCLEAR: CalculatorAction = {
-  payload: {
-    type: ACTIONS.CLEAR,
-    input: null,
+  const btnCLEAR: CalculatorAction = {
+    payload: {
+      type: ACTIONS.CLEAR,
+      input: null,
+    }
   }
-}
 
-const btnDEL: CalculatorAction = {
-  payload: {
-    type: ACTIONS.DELETE_LAST,
-    input: null,
+  const btnDEL: CalculatorAction = {
+    payload: {
+      type: ACTIONS.DELETE_LAST,
+      input: null,
+    }
   }
-}
 
-const btnEVAL: CalculatorAction = {
-  payload: {
-    type: ACTIONS.EVALUATE,
-    input: null,
+  const btnEVAL: CalculatorAction = {
+    payload: {
+      type: ACTIONS.EVALUATE,
+      input: null,
+    }
   }
-}
 
   return (
     <div className="calculator-grid">
