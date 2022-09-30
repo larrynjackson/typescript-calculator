@@ -1,6 +1,6 @@
 
 
-import { DECIMAL_PRECISION } from "./App";
+import { DECIMAL_PRECISION } from "./CalculatorTypes";
 
 export class Fraction {
     numerator: number;

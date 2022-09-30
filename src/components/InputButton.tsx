@@ -1,11 +1,11 @@
 
 
-import { ACTIONS } from './App';
+import { ACTIONS, CalculatorAction } from './CalculatorTypes';
 
 type InputButtonProps = {
     id: string,
     input: string,
-    dispatch: Function,
+    dispatch: React.Dispatch<CalculatorAction>,
 }
 
 
