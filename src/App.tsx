@@ -220,11 +220,21 @@ function ActionOperatorEval(state: CalculatorState, payload: CalculatorAction, e
 }
 
 function ActionsStart(state: CalculatorState, payload: CalculatorAction) {
-  // have done evaluate that sets overwrite and clears previous and operation.
-  // now we see an operation. push current to previous, clear current and set
-  // operation.
+  // Note: The overwrite flag should have been named something like
+  // overwriteCurrentOperand. After an evaluation has occured we will always
+  // be overwriting the current with a new input character in this state
+  // but we may have pushed current to previous setting the operation
+  // before overwriting the current. These operation are described below.
   if (state.overwrite) {
     if (payload.payload.input === '-' || payload.payload.input === '+' || payload.payload.input === '*' || payload.payload.input === '/') {
+      // Evaluate sets the overwrite flag true and places the evaluated answer
+      // in current after clearing previous and the operation. Now we see
+      // an operation so push the current to previous, set the operation, 
+      // clear the current and set overwrite to false. We are leaving
+      // the state set to ActionStart waiting for an new character that
+      // can be either a digit or the - sign signaling a negative current
+      // value to come. The first digit in the ActionStart state will be
+      // handled by the next if condition in this method.
       SaveHistory(state);
       state.previousOperand = state.currentOperand;
       state.operation = payload.payload.input;
@@ -237,13 +247,20 @@ function ActionsStart(state: CalculatorState, payload: CalculatorAction) {
     }
   }
   if (!isNaN(parseInt(payload.payload.input!)) || payload.payload.input === '-') {
+    // We are here waiting for the first character of an expression to be
+    // typed that can be either a digit or a - sign. If it's a - sign set
+    // the state to a NEGATE (either decimal or fraction) which will start
+    // accepting future digits. If it's a digit set the state to a DIGIT
+    // state (either decimal or fraction) which will accept future digits.
+    // In either case save the first character in current before moving
+    // control to the next state.
+    // The overwrite flag may be set entering this if condition if the 
+    // payload contains a digit next character after an evaluation.
+    // Regardless we want it reset and current cleared before accepting
+    // a new current first character.
     SaveHistory(state);
-    // have done evaluate that sets overwrite and clears previous and operation.
-    // now we see a digit so clear the current and turn off overwrite.
-    if (state.overwrite) {
-      state.currentOperand = null;
-      state.overwrite = false;
-    }
+    state.overwrite = false;
+    state.currentOperand = null;
     if (state.mode === '(D)') {
       if (!isNaN(parseInt(payload.payload.input!))) {
         state.inputState = ACTIONS.DIGIT;
@@ -281,7 +298,7 @@ function evaluateFractions(state: CalculatorState) {
   let fractionCurrent = new Fraction(state.currentOperand!);
   let fractionPrevious = new Fraction(state.previousOperand!);
   if (!fractionCurrent.getIsValid() || !fractionPrevious.getIsValid()) {
-    return "";
+    return "error";
   }
   switch (state.operation) {
     case "+":
@@ -306,7 +323,7 @@ function evaluate(state: CalculatorState) {
   const previous = parseFloat(state.previousOperand!);
   const current = parseFloat(state.currentOperand!);
   if (isNaN(previous) || isNaN(current)) {
-    return "";
+    return "error";
   }
   let computation = 0;
   switch (state.operation) {
