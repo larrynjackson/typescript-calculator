@@ -1,0 +1,28 @@
+step 1: install nodejs, google download and install nodejs
+	run npm -v to see the version installed
+step 2: install typescript - npm install -g typescript
+	tsc -v to see the version
+step 3: get an editor like visual studio code
+step 4: in the terminal window of visual studio code create a file
+	called main.ts -
+		export {}
+		let message = "hello world";
+		console.log(messsage);
+step 5: compile main.ts - tsc main.ts creates file main.js
+step 6: run main.js - node main.js
+
+watch the videos below to get started with react with typescript
+and a 50 minute video on typescript.
+
+how to create a typescript react project:
+npx create-react-app react-app-demo --template typescript
+run it: npm started
+
+https://create-react-app.dev/docs/getting-started
+
+https://www.youtube.com/watch?v=TiSGujM22OI
+
+https://www.youtube.com/watch?v=WBPrJSw7yQA
+
+https://www.youtube.com/watch?v=Kt4PQlcLHco
+
