@@ -1,5 +1,11 @@
 # Getting Started with Create React App
 
+keyboard input:
+k (show or hide screen buttons)
+m (change mode from descimal to frction) fraction ex: 2|3 + 1|2
+c (clear calculator)
+backspace (move back one input)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
